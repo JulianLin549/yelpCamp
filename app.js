@@ -1,8 +1,10 @@
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const Campground = require("./models/campground")
+const express = require('express'),
+    app = express(),
+    bodyParser = require('body-parser'),
+    mongoose = require('mongoose'),
+    Campground = require("./models/campground"),
+    seedDB = require("./seeds")
+
 mongoose.connect("mongodb://localhost:27017/yelp_camp", {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -13,49 +15,8 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public")); //去public找東西
 app.set('view engine', 'ejs'); //把ejs設訂為預設檔案。
+seedDB(); //init a starting data
 
-
-/* Campground.create(
-    {
-        name: "Granite Hill",
-        image: "https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&h=350",
-        description: "This is Granite Hill, no bathroom, no water, beautiful."
-    },
-    function(err, campground){
-        if(err){
-            console.log(err)
-        }else{
-            console.log("newly create campground");
-            console.log(campground);
-        }
-    })  */
-
-const campgrounds = [{
-        name: "Salmon Creek",
-        image: "https://images.pexels.com/photos/1687845/pexels-photo-1687845.jpeg?auto=compress&cs=tinysrgb&h=350"
-    },
-    {
-        name: "Granite Hill",
-        image: "https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&h=350"
-    },
-    {
-        name: "Mountain Goat Camp",
-        image: "https://cdn2.howtostartanllc.com/images/business-ideas/business-idea-images/Campground.webp"
-    },
-    {
-        name: "Salmon Creek",
-        image: "https://images.pexels.com/photos/1687845/pexels-photo-1687845.jpeg?auto=compress&cs=tinysrgb&h=350"
-    },
-    {
-        name: "Granite Hill",
-        image: "https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&h=350"
-    },
-    {
-        name: "Mountain Goat Camp",
-        image: "https://cdn2.howtostartanllc.com/images/business-ideas/business-idea-images/Campground.webp"
-    },
-
-]
 
 app.get('/', (req, res) => {
     res.render("landing");
@@ -102,16 +63,19 @@ app.get('/campgrounds/new', (req, res) => {
 // SHOW- Shows more info about one campground
 app.get('/campgrounds/:id', (req, res) => {
     //用ID找就不會重複。
-    Campground.findById(req.params.id, (err, foundCampground) => {
+    //retreving one campground with the right id
+    //we populate the comments array on it (we get the real comments from the comments DB, so it is not just ids) 
+    //and we exec the function
+    Campground.findById(req.params.id).populate("comments").exec(function (err, foundCampground) {
         if (err) {
             console.log(err);
         } else {
+            //console.log(foundCampground);
             res.render("show", {
                 campground: foundCampground
             }); //把回傳的campground傳到ejs裡面。
         }
     });
-
 })
 const server = app.listen(3000, () => {
     console.log('Listening on port 3000');
