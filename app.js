@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public")); //去public找東西
 app.set('view engine', 'ejs'); //把ejs設訂為預設檔案。
+app.use(express.static(__dirname + '/public')) //dirname是你現在script跑的位置。
 seedDB(); //init a starting data
 
 
