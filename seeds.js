@@ -30,16 +30,17 @@ async function seedDB() {
             //add a few campgrounds
             let campground = await Campground.create(seed);
             //console.log('campground created')
-            let comment = await Comment.create({
+            /* let comment = await Comment.create({
                 text: "This place is Gresy, but I wish there was WIFI",
                 author: "Homwer Good"
-            })
+            }) */
             //console.log('comment created')
             //push comment to campgrounds 
-            campground.comments.push(comment);
+            //campground.comments.push(comment);
             campground.save();
             //console.log("comment added to campground")
         }
+
     } catch (err) {
         console.log(err)
     };
