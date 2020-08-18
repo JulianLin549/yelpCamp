@@ -18,7 +18,7 @@ router.get("/register", (req, res) => {
 });
 
 //handling user signup
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
     let newUser = new User({
         username: req.body.username
     });
@@ -29,12 +29,13 @@ router.post("/register", (req, res) => {
     //and we save it in the database
     User.register(newUser, req.body.password, (err, user) => {
         if (err) {
-            console.log(err);
-            return res.render('register');
+            req.flash("error", err.message);
+            res.redirect('/register');
         }
         //log the user in, take care of the session, run the serialize session method
         //use local strategy, we can use facebook, google etc.
         passport.authenticate("local")(req, res, () => {
+            req.flash("success", "Welcome to YelpCamp " + user.username);
             res.redirect("/campgrounds");
         });
     });
@@ -49,13 +50,15 @@ router.get("/login", (req, res) => {
 //using middle ware
 router.post("/login", passport.authenticate("local", {
     successRedirect: "/campgrounds",
-    failureRedirect: "/login"
-}), (req, res) => {});
+    failureRedirect: "/login",
+    failureFlash: { type: 'error', message: 'Invalid username or password.' }
+}));
 
 
 //LOGOUT
 router.get("/logout", (req, res) => {
     req.logout();
+    req.flash("success", "Logged out");
     res.redirect("/");
 });
 

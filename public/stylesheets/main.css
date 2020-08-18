@@ -11,7 +11,7 @@
     text-align: justify
 }
 
-#delete-form {
+.delete-form {
     display: inline;
 }
 

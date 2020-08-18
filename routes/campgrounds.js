@@ -18,14 +18,15 @@ router.get('/', (req, res) => {
 //Create == add new campground to DB
 router.post('/', middleware.isLoggedIn, (req, res) => {
     //get data from for ans ass to campground arrayy
-    let name = req.body.name;
-    let image = req.body.image;
-    let description = req.body.description;
-    let author = {
-        id: req.user._id,
-        username: req.user.username
-    } // 只要isLoggedIn，就會有req.user
-    let newCampground = { name, image, description, author };
+    let name = req.body.name,
+        image = req.body.image,
+        description = req.body.description,
+        price = req.body.price,
+        author = {
+            id: req.user._id,
+            username: req.user.username
+        } // 只要isLoggedIn，就會有req.user
+    let newCampground = { name, price, image, description, author };
 
     //Create a new Campground and save to DB
     Campground.create(newCampground, (err, newlyCreated) => {
@@ -50,8 +51,10 @@ router.get('/:id', (req, res) => {
     //we populate the comments array on it (we get the real comments from the comments DB, so it is not just ids) 
     //and we exec the function
     Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground) {
-        if (err) {
-            console.log(err);
+        if (err || !foundCampground) {
+            req.flash("error", "Campground not found!");
+            return res.redirect("back");
+            //console.log(err);
         } else {
             //console.log(foundCampground);
             res.render("campgrounds/show", {
@@ -65,7 +68,11 @@ router.get('/:id', (req, res) => {
 router.get('/:id/edit', middleware.checkCampgroundOwnership, (req, res) => {
     //if user logged in?
     Campground.findById(req.params.id, (err, foundCampground) => {
-        res.render("campgrounds/edit", { campground: foundCampground })
+        if (err) {
+            req.flash("error", "Campground doesn't exist.");
+        } else {
+            res.render("campgrounds/edit", { campground: foundCampground })
+        }
     })
 
 })

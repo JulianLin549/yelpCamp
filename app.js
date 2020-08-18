@@ -8,6 +8,7 @@ const express = require('express'),
     passportLocalMongoose = require("passport-local-mongoose"),
     Campground = require("./models/campground"),
     Comment = require("./models/comment"),
+    flash = require("connect-flash"),
     User = require("./models/user"),
     seedDB = require("./seeds")
 
@@ -18,6 +19,7 @@ const commentRoutes = require('./routes/comments'),
 app.use(express.static(__dirname + '/public')) //dirname是你現在script跑的位置。
 
 app.use(mathodOverride("_method"));
+app.use(flash());
 
 //PASSPORT CONFIGURATION
 app.use(require("express-session")({
@@ -41,9 +43,10 @@ passport.deserializeUser(User.deserializeUser());
 //middleware who send req.user to every route
 app.use((req, res, next) => {
     res.locals.currentUser = req.user;
+    res.locals.error = req.flash("error");
+    res.locals.success = req.flash("success");
     next();
 })
-
 
 mongoose.connect("mongodb://localhost:27017/yelp_camp", {
         useNewUrlParser: true,
@@ -65,7 +68,9 @@ app.use('/', indexRoutes)
 app.use('/campgrounds/:id/comments', commentRoutes)
 app.use('/campgrounds', campgroundRoutes)
 
-
+app.get('/:else', (req, res) => {
+    res.send("No such pass exist.")
+})
 const server = app.listen(3000, () => {
     console.log('Listening on port 3000');
 });
