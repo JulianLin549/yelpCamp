@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const commentSchema = mongoose.Schema({
     text: String,
+    createdAt: { type: Date, default: Date.now() },
     author: {
         //comments object ids
         //ref: model refer to user   

@@ -14,20 +14,19 @@
 
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-light">
-            <a class="navbar-brand" href="/">YelpCamp</a>
+            <a class="navbar-brand" href="/campgrounds">YelpCamp</a>
             <!-- collape resposive button -->
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <button class=" navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
 
-                    <li class="nav-item active"><a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a></li>
+                    <li class="nav-item <%= typeof page !== 'undefined' && page === 'campgrounds' ? 'active' : '' %>"><a class="nav-link" href="/campgrounds">Home</a></li>
+                    <!--<li class="nav-item"><a class="nav-link" href="#">Features</a></li>
 
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-
-                    <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li> -->
 
                 </ul>
                 <ul class="navbar-nav">
@@ -52,11 +51,20 @@
         </nav>
         <div class="container mt-2">
             <% if(error && error.length > 0){ %>
-            <div class="alert alert-danger" role="alert"><%= error  %> </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error  %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <% } %>
             <% if(success && success.length > 0){ %>
-            <div class="alert alert-success" role="alert"><%= success  %> </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success  %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <% } %>
         </div>
-
-    </div>
+        <div class="container">

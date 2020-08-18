@@ -13,33 +13,34 @@
 </head>
 
 <body>
+    <div id="app">
+        <div>
+            <div class="container">
+                <% if(error && error.length > 0){ %>
+                <div class="alert alert-danger" role="alert">
+                    <%= error %>
+                </div>
+                <% } %>
+                <% if(success && success.length > 0){ %>
+                <div class="alert alert-success" role="alert">
+                    <%= success %>
+                </div>
+                <% } %>
+            </div>
 
-    <div class="container">
-        <% if(error && error.length > 0){ %>
-        <div class="alert alert-danger" role="alert">
-            <%= error %>
-        </div>
-        <% } %>
-        <% if(success && success.length > 0){ %>
-        <div class="alert alert-success" role="alert">
-            <%= success %>
-        </div>
-        <% } %>
-    </div>
+            <div id="landing-header">
+                <h1>Welcome to YelpCamp!</h1>
+                <hr>
+                <a href="/campgrounds" class="btn btn-lg btn btn-outline-light">View All Campgrounds</a>
+            </div>
 
-    <div id="landing-header">
-        <h1>Welcome to YelpCamp!</h1>
-        <hr>
-        <a href="/campgrounds" class="btn btn-lg btn btn-outline-light">View All Campgrounds</a>
-    </div>
+            <ul class="slideshow">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
 
-    <ul class="slideshow">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-    </ul>
-
-    <%-include ("./partials/footer") -%>
-    <!-- updated syntax in ejs v3.0.1 -->
+            <%-include ("./partials/footer") -%>
+            <!-- updated syntax in ejs v3.0.1 -->

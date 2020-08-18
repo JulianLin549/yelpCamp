@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 
 //show signup form
 router.get("/register", (req, res) => {
-    res.render("register");
+    res.render("register", { page: "register" });
 });
 
 //handling user signup
@@ -44,7 +44,7 @@ router.post("/register", async (req, res) => {
 //LOGIN ROUTES
 //render login form
 router.get("/login", (req, res) => {
-    res.render("login");
+    res.render("login", { page: "login" });
 });
 //login logic
 //using middle ware
@@ -59,7 +59,7 @@ router.post("/login", passport.authenticate("local", {
 router.get("/logout", (req, res) => {
     req.logout();
     req.flash("success", "Logged out");
-    res.redirect("/");
+    res.redirect("/login");
 });
 
 function isLoggedIn(req, res, next) {
