@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router()
 const Campground = require('../models/campground');
+const middleware = require('../middleware') //will automaticlly include index.js
 
 router.get('/', (req, res) => {
     //get all campgrounds from DB
@@ -15,7 +16,7 @@ router.get('/', (req, res) => {
     })
 });
 //Create == add new campground to DB
-router.post('/', isLoggedIn, (req, res) => {
+router.post('/', middleware.isLoggedIn, (req, res) => {
     //get data from for ans ass to campground arrayy
     let name = req.body.name;
     let image = req.body.image;
@@ -39,7 +40,7 @@ router.post('/', isLoggedIn, (req, res) => {
     });
 });
 //要比/:id前定義，不然會變成/:id 優先
-router.get('/new', isLoggedIn, (req, res) => {
+router.get('/new', middleware.isLoggedIn, (req, res) => {
     res.render('campgrounds/new');
 });
 // SHOW- Shows more info about one campground
@@ -60,11 +61,36 @@ router.get('/:id', (req, res) => {
     });
 });
 
-//middleware
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect("/login");
-}
+//EDIT CAMPGROUND
+router.get('/:id/edit', middleware.checkCampgroundOwnership, (req, res) => {
+    //if user logged in?
+    Campground.findById(req.params.id, (err, foundCampground) => {
+        res.render("campgrounds/edit", { campground: foundCampground })
+    })
+
+})
+// UPDATE CAMPGROUND
+router.put('/:id', middleware.checkCampgroundOwnership, (req, res) => {
+    let data = req.body.campground; //在ejs裡面包好了campground[name]
+    //find and update
+    Campground.findByIdAndUpdate(req.params.id, data, (err, updatedCampground) => {
+        if (err) {
+            res.redirect("/campgrounds");
+        } else {
+            res.redirect("/campgrounds/" + req.params.id);
+        }
+    });
+})
+
+// DESTROY CAMPGROUND
+router.delete('/:id', middleware.checkCampgroundOwnership, (req, res) => {
+    Campground.findByIdAndRemove(req.params.id, (err) => {
+        if (err) {
+            res.redirect("/campgrounds")
+        } else {
+            res.redirect("/campgrounds")
+        }
+    })
+})
+
 module.exports = router

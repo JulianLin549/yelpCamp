@@ -4,6 +4,7 @@ const express = require('express'),
     mongoose = require('mongoose'),
     passport = require('passport'),
     LocalStrategy = require("passport-local"),
+    mathodOverride = require("method-override"),
     passportLocalMongoose = require("passport-local-mongoose"),
     Campground = require("./models/campground"),
     Comment = require("./models/comment"),
@@ -14,7 +15,9 @@ const express = require('express'),
 const commentRoutes = require('./routes/comments'),
     campgroundRoutes = require('./routes/campgrounds'),
     indexRoutes = require('./routes/index')
+app.use(express.static(__dirname + '/public')) //dirname是你現在script跑的位置。
 
+app.use(mathodOverride("_method"));
 
 //PASSPORT CONFIGURATION
 app.use(require("express-session")({
@@ -44,7 +47,8 @@ app.use((req, res, next) => {
 
 mongoose.connect("mongodb://localhost:27017/yelp_camp", {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
+        useFindAndModify: false
     }).then(() => console.log(`Database connected`))
     .catch(err => console.log(`Database connection error: ${err.message}`));;
 
@@ -53,7 +57,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public")); //去public找東西
 app.set('view engine', 'ejs'); //把ejs設訂為預設檔案。
-app.use(express.static(__dirname + '/public')) //dirname是你現在script跑的位置。
+
 //seed the db
 //seedDB(); //init a starting data
 

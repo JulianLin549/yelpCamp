@@ -1,16 +1,13 @@
-//======================================
-//COMMENTS ROUTES
-//======================================
 const express = require('express');
 //mergeParams: true是為了讓'/campgrounds/:id/comments'裡面的:id可以被傳進來comment route，
 //而不是只待在campground route。
 const router = express.Router({ mergeParams: true })
-
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
+const middleware = require('../middleware') //will automaticlly include index.js
 
 //comment create
-router.get('/new', isLoggedIn, (req, res) => {
+router.get('/new', middleware.isLoggedIn, (req, res) => {
     //find campground by id
     Campground.findById(req.params.id, (err, campground) => {
         if (err) {
@@ -25,7 +22,7 @@ router.get('/new', isLoggedIn, (req, res) => {
 
 });
 //comment create
-router.post('/', isLoggedIn, (req, res) => {
+router.post('/', middleware.isLoggedIn, (req, res) => {
     //lookup campground using ID
     Campground.findById(req.params.id, (err, campground) => {
         if (err) {
@@ -57,11 +54,43 @@ router.post('/', isLoggedIn, (req, res) => {
         //redirect campground show page
     });
 });
-//middleware
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect("/login");
-}
+//COMMENT EDIT
+router.get("/:comment_id/edit", middleware.checkCommentOwnership, (req, res) => {
+    Comment.findById(req.params.comment_id, (err, foundComment) => {
+        if (err) {
+            res.redirect("back")
+        } else {
+            res.render("comments/edit", {
+                campground_id: req.params.id,
+                comment: foundComment
+            }) //之前在"/campgrounds/:id/comments" route就有:id(campground的)
+        }
+    })
+
+})
+//COMMENT UPDATE
+router.put("/:comment_id", middleware.checkCommentOwnership, (req, res) => {
+    let data = req.body.comment;
+    Comment.findByIdAndUpdate(req.params.comment_id, data, (err, updatedComment) => {
+        if (err) {
+            res.redirect("back");
+        } else {
+            res.redirect("/campgrounds/" + req.params.id);
+        }
+    });
+
+})
+//COMMENT DESTROY
+router.delete("/:comment_id", middleware.checkCommentOwnership, (req, res) => {
+    Comment.findByIdAndRemove(req.params.comment_id, (err) => {
+        if (err) {
+            res.redirect("back");
+        } else {
+            res.redirect("/campgrounds/" + req.params.id);
+        }
+    })
+
+})
+
+
 module.exports = router
