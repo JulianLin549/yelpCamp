@@ -1,28 +1,30 @@
 <%-include ("../partials/header")  -%>
 
 
-<h1 style="text-align: center;">Create a new Campground</h1>
-<div style="width:30%; margin:25px auto">
-    <form action="/campgrounds" method="POST">
+<h1 style="text-align: center">Create a New Campground</h1>
+<div style="width: 35%; margin: 30px auto;">
+    <form action="/campgrounds" method="POST" enctype="multipart/form-data">
         <div class="form-group">
-            <input class="form-control" type="text" name="name" placeholder="name">
+            <input class="form-control" type="text" name="campground[name]" placeholder="name" required>
         </div>
         <div class="form-group">
-            <input class="form-control" type="number" name="price" placeholder="price" min="0.01" step="0.01">
+            <label for="image">Image</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
         </div>
         <div class="form-group">
-            <input class="form-control" type="text" name="image" placeholder="image url">
+            <input class="form-control" type="number" name="campground[price]" placeholder="price" min="0.01" step="0.01">
         </div>
         <div class="form-group">
-            <textarea class="form-control" name="description" cols="30" rows="5">description</textarea>
+            <input class="form-control" type="text" name="campground[description]" placeholder="description" required>
         </div>
         <div class="form-group">
-            <button class="class= btn btn-lg btn-primary btn-block">Submit!</button>
+            <button class="btn btn-lg btn-primary btn-block">Submit!</button>
         </div>
-
+    </form>
     </form>
     <a href="/campgrounds">Go Back to Campgrounds!</a>
 </div>
+
 
 
 

@@ -2,44 +2,88 @@ const express = require('express');
 const router = express.Router()
 const Campground = require('../models/campground');
 const middleware = require('../middleware') //will automaticlly include index.js
+const multer = require('multer');
+
+//set filename to multer 
+let storage = multer.diskStorage({
+    filename: function(req, file, callback) {
+        callback(null, Date.now() + file.originalname);
+    }
+});
+//only allow jpeg, jpeg, png, gif to be uploaded
+let imageFilter = function(req, file, cb) {
+    // accept image files only
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+};
+let upload = multer({ storage: storage, fileFilter: imageFilter })
+
+
+//configure cloudnary
+let cloudinary = require('cloudinary');
+cloudinary.config({
+    cloud_name: 'dgasptnr5',
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 
 router.get('/', (req, res) => {
-    //get all campgrounds from DB
-    Campground.find({}, (err, allcampgrounds) => {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("campgrounds/index", {
-                campgrounds: allcampgrounds,
-                page: 'campgrounds'
-            }); //傳入campgrounds property to ejs file
-        }
-    })
+    //fuzzy search
+    if (req.query.search) {
+        const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+        //get all campgrounds from DB
+        Campground.find({ name: regex }, (err, allcampgrounds) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (allcampgrounds.length < 1) {
+                    req.flash("error", "Campground no found");
+                    return res.redirect("back");
+                }
+                res.render("campgrounds/index", {
+                    campgrounds: allcampgrounds,
+                    page: 'campgrounds'
+                }); //傳入campgrounds property to ejs file
+            }
+        })
+    } else {
+        //get all campgrounds from DB
+        Campground.find({}, (err, allcampgrounds) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.render("campgrounds/index", {
+                    campgrounds: allcampgrounds,
+                    page: 'campgrounds'
+                }); //傳入campgrounds property to ejs file
+            }
+        })
+    }
 });
 //Create == add new campground to DB
-router.post('/', middleware.isLoggedIn, (req, res) => {
-    //get data from for ans ass to campground arrayy
-    let name = req.body.name,
-        image = req.body.image,
-        description = req.body.description,
-        price = req.body.price,
-        author = {
+//you can upload the image
+router.post('/', middleware.isLoggedIn, upload.single('image'), (req, res) => {
+    //req.file comming from multer
+    cloudinary.uploader.upload(req.file.path, function(result) {
+        // add cloudinary url for the image to the campground object under image property
+        req.body.campground.image = result.secure_url;
+        // add author to campground
+        req.body.campground.author = {
             id: req.user._id,
             username: req.user.username
-        } // 只要isLoggedIn，就會有req.user
-    let newCampground = { name, price, image, description, author };
-
-    //Create a new Campground and save to DB
-    Campground.create(newCampground, (err, newlyCreated) => {
-        //should be if user type something wrong, sent user back to form and tell them
-        //should use escape key
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(newlyCreated)
-            res.redirect('/campgrounds');
         }
+        Campground.create(req.body.campground, (err, campground) => {
+            if (err) {
+                req.flash('error', err.message);
+                return res.redirect('back');
+            }
+            res.redirect('/campgrounds/' + campground.id);
+        });
     });
+
 });
 //要比/:id前定義，不然會變成/:id 優先
 router.get('/new', middleware.isLoggedIn, (req, res) => {
@@ -100,5 +144,9 @@ router.delete('/:id', middleware.checkCampgroundOwnership, (req, res) => {
         }
     })
 })
+
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "||$&")
+}
 
 module.exports = router
