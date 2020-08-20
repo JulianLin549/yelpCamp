@@ -98,6 +98,7 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
         }
         //把暫存區的圖片砍掉
         fs.unlinkSync(req.file.path);
+        //塞到db裡面
         let campground = await Campground.create(req.body.campground);
         res.redirect('/campgrounds/' + campground.id);
 
@@ -145,16 +146,51 @@ router.get('/:id/edit', middleware.checkCampgroundOwnership, (req, res) => {
 
 })
 // UPDATE CAMPGROUND
-router.put('/:id', middleware.checkCampgroundOwnership, (req, res) => {
-    let data = req.body.campground; //在ejs裡面包好了campground[name]
-    //find and update
-    Campground.findByIdAndUpdate(req.params.id, data, (err, updatedCampground) => {
-        if (err) {
-            res.redirect("/campgrounds");
-        } else {
-            res.redirect("/campgrounds/" + req.params.id);
+router.put('/:id', middleware.checkCampgroundOwnership, upload.single('image'), async (req, res) => {
+
+    try {
+        //如果有更新照片
+        if (req.file) {
+            //去node server暫存區找圖片在哪
+            let bitmap = fs.readFileSync(req.file.path);
+            // 將圖片轉成base64
+            let encode_image = Buffer.from(bitmap).toString('base64');
+            //======================
+            //imgur request setting
+            //======================
+            request_options = {
+                'method': 'POST',
+                'url': 'https://api.imgur.com/3/image',
+                'headers': {
+                    'Authorization': 'Client-ID f9a175a98aefebe'
+                },
+                formData: {
+                    'image': encode_image
+                }
+            };
+            //發request
+            await request(request_options, function(error, response) {
+                if (error) throw new Error(error);
+                imgurURL = response.body
+            });
+            //這邊回傳的imgurURL是JSON要轉成str才能存到mongodb
+            const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
+            console.log(imgurURLToJSON2)
+            // add imgur url for the image to the campground object under image property
+            req.body.campground.image = imgurURLToJSON2;
+            fs.unlinkSync(req.file.path);
+
         }
-    });
+        let data = req.body.campground; //在ejs裡面包好了campground[name, image, author]
+        //find and update
+        await Campground.findByIdAndUpdate(req.params.id, data);
+        res.redirect("/campgrounds/" + req.params.id);
+
+    } catch (error) {
+        console.log(error);
+        req.flash('error', err.message);
+        return res.redirect('back');
+    }
 })
 
 // DESTROY CAMPGROUND

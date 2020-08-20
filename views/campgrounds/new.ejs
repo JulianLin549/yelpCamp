@@ -12,7 +12,7 @@
                 <input style="display: none;" type="file" id="uploadImage" name="image" accept="image/*">
             </label>
             <span style="word-break: break-all;" id="fileDescription"> Upload Image less than 6MB. </span>
-
+            <i style="display: none; color: steelblue; cursor: pointer" class="fas fa-trash-alt" id="deleteIcon"></i>
         </div>
         <div class="form-group">
             <input class="form-control" type="number" id="uploadPrice" name="campground[price]" placeholder="price" min="0.01" step="0.01" required>
@@ -33,6 +33,7 @@
     const price = document.getElementById("uploadPrice");
     const description = document.getElementById("uploadDescription");
     const fileDescription = document.getElementById("fileDescription");
+    const deleteIcon = document.getElementById("deleteIcon");
     //file should not exceed 6 MB
     let isImage = false;
 
@@ -47,9 +48,14 @@
         } else if (this.value != "") {
             fileDescription.innerText = this.files[0].name;
             console.log(this.files[0].name);
+            deleteIcon.style.display = 'inline';
         }
     };
-
+    deleteIcon.onclick = function() {
+        image.value = "";
+        fileDescription.innerText = "Upload Image less than 6MB.";
+        deleteIcon.style.display = 'none';
+    }
 
     window.addEventListener('mousemove', function() {
         if (name.value && price.value && description.value && image.value) {
