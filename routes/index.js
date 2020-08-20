@@ -27,7 +27,7 @@ router.post("/register", async (req, res) => {
     //because we dont want to store real password into database
     //we take the password as second argument and User.register will hash it
     //and we save it in the database
-    User.register(newUser, req.body.password, (err, user) => {
+    User.register(newUser, req.body.password1, (err, user) => {
         if (err) {
             req.flash("error", err.message);
             res.redirect('/register');

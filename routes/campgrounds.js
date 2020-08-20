@@ -1,11 +1,13 @@
-const express = require('express');
-const router = express.Router()
-const Campground = require('../models/campground');
-const middleware = require('../middleware') //will automaticlly include index.js
-const multer = require('multer');
+const express = require('express'),
+    router = express.Router(),
+    Campground = require('../models/campground'),
+    middleware = require('../middleware'), //will automaticlly include index.js
+    multer = require('multer'),
+    fs = require("fs"),
+    request = require("request-promise-native")
 
 //set filename to multer 
-let storage = multer.diskStorage({
+const storage = multer.diskStorage({
     filename: function(req, file, callback) {
         callback(null, Date.now() + file.originalname);
     }
@@ -19,15 +21,6 @@ let imageFilter = function(req, file, cb) {
     cb(null, true);
 };
 let upload = multer({ storage: storage, fileFilter: imageFilter })
-
-
-//configure cloudnary
-let cloudinary = require('cloudinary');
-cloudinary.config({
-    cloud_name: 'dgasptnr5',
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
 
 
 router.get('/', (req, res) => {
@@ -65,24 +58,54 @@ router.get('/', (req, res) => {
 });
 //Create == add new campground to DB
 //you can upload the image
-router.post('/', middleware.isLoggedIn, upload.single('image'), (req, res) => {
-    //req.file comming from multer
-    cloudinary.uploader.upload(req.file.path, function(result) {
-        // add cloudinary url for the image to the campground object under image property
-        req.body.campground.image = result.secure_url;
+router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res) => {
+    //req.file comming from multer, default store image in temp
+    console.log(req.file.path);
+    try {
+        //
+        //去node server暫存區找圖片在哪
+        let bitmap = fs.readFileSync(req.file.path);
+        // 將圖片轉成base64
+        let encode_image = Buffer.from(bitmap).toString('base64');
+        //======================
+        //imgur request setting
+        //======================
+        request_options = {
+            'method': 'POST',
+            'url': 'https://api.imgur.com/3/image',
+            'headers': {
+                'Authorization': 'Client-ID f9a175a98aefebe'
+            },
+            formData: {
+                'image': encode_image
+            }
+        };
+        //發request
+        await request(request_options, function(error, response) {
+            if (error) throw new Error(error);
+            imgurURL = response.body
+        });
+        //這邊回傳的imgurURL是JSON要轉成str才能存到mongodb
+        const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
+        console.log(imgurURLToJSON2)
+        // add imgur url for the image to the campground object under image property
+        req.body.campground.image = imgurURLToJSON2;
+
         // add author to campground
         req.body.campground.author = {
             id: req.user._id,
             username: req.user.username
         }
-        Campground.create(req.body.campground, (err, campground) => {
-            if (err) {
-                req.flash('error', err.message);
-                return res.redirect('back');
-            }
-            res.redirect('/campgrounds/' + campground.id);
-        });
-    });
+        //把暫存區的圖片砍掉
+        fs.unlinkSync(req.file.path);
+        let campground = await Campground.create(req.body.campground);
+        res.redirect('/campgrounds/' + campground.id);
+
+    } catch (error) {
+        console.log(error);
+        req.flash('error', err.message);
+        return res.redirect('back');
+    }
 
 });
 //要比/:id前定義，不然會變成/:id 優先
