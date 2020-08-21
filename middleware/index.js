@@ -1,6 +1,8 @@
 //all the middle goes here
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
+const User = require('../models/user');
+
 
 const middlewareObj = {}
 
@@ -59,7 +61,9 @@ middlewareObj.checkCampgroundOwnership = function(req, res, next) {
         res.redirect("back"); //send to where the user originally from.
     }
 
-}
+};
+
+
 
 middlewareObj.isLoggedIn = function(req, res, next) {
     if (req.isAuthenticated()) {

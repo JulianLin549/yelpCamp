@@ -4,7 +4,7 @@ const express = require('express'),
     middleware = require('../middleware'), //will automaticlly include index.js
     multer = require('multer'),
     fs = require("fs"),
-    request = require("request-promise-native")
+    request = require("request-promise-native");
 
 //set filename to multer 
 const storage = multer.diskStorage({
@@ -74,7 +74,7 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
             'method': 'POST',
             'url': 'https://api.imgur.com/3/image',
             'headers': {
-                'Authorization': 'Client-ID f9a175a98aefebe'
+                'Authorization': 'Client-ID' + process.env.IMGUR_Client_ID
             },
             formData: {
                 'image': encode_image
@@ -158,16 +158,7 @@ router.put('/:id', middleware.checkCampgroundOwnership, upload.single('image'), 
             //======================
             //imgur request setting
             //======================
-            request_options = {
-                'method': 'POST',
-                'url': 'https://api.imgur.com/3/image',
-                'headers': {
-                    'Authorization': 'Client-ID f9a175a98aefebe'
-                },
-                formData: {
-                    'image': encode_image
-                }
-            };
+
             //發request
             await request(request_options, function(error, response) {
                 if (error) throw new Error(error);
