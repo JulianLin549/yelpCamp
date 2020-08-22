@@ -62,7 +62,15 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
     //req.file comming from multer, default store image in temp
     console.log(req.file.path);
     try {
-        //
+        //add location to campground
+        if (Math.abs(parseFloat(req.body.longitude)) > 180 || Math.abs(parseFloat(req.body.latitude)) > 90) {
+            throw new Error('Location coordination out of range.')
+        }
+        req.body.campground.location = {
+            type: 'Point',
+            coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)]
+        }
+
         //去node server暫存區找圖片在哪
         let bitmap = fs.readFileSync(req.file.path);
         // 將圖片轉成base64
@@ -74,7 +82,7 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
             'method': 'POST',
             'url': 'https://api.imgur.com/3/image',
             'headers': {
-                'Authorization': 'Client-ID' + process.env.IMGUR_Client_ID
+                'Authorization': 'Client-ID ' + process.env.IMGUR_CLIENT_ID
             },
             formData: {
                 'image': encode_image
@@ -96,6 +104,7 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
             id: req.user._id,
             username: req.user.username
         }
+
         //把暫存區的圖片砍掉
         fs.unlinkSync(req.file.path);
         //塞到db裡面
@@ -104,7 +113,7 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
 
     } catch (error) {
         console.log(error);
-        req.flash('error', err.message);
+        req.flash('error', error.message);
         return res.redirect('back');
     }
 
@@ -125,9 +134,9 @@ router.get('/:id', (req, res) => {
             return res.redirect("back");
             //console.log(err);
         } else {
-            //console.log(foundCampground);
             res.render("campgrounds/show", {
-                campground: foundCampground
+                campground: foundCampground,
+                mapboxAccessToken: process.env.MAPBOT_ACCESS_TOKEN
             }); //把回傳的campground傳到ejs裡面。
         }
     });
@@ -166,7 +175,7 @@ router.put('/:id', middleware.checkCampgroundOwnership, upload.single('image'), 
             });
             //這邊回傳的imgurURL是JSON要轉成str才能存到mongodb
             const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
-            console.log(imgurURLToJSON2)
+            //console.log(imgurURLToJSON2)
             // add imgur url for the image to the campground object under image property
             req.body.campground.image = imgurURLToJSON2;
             fs.unlinkSync(req.file.path);

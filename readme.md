@@ -1,2 +1,1 @@
-# replace the passport-local-mongoose
-because it use weak hashing algorithm
+# all store show on map in campgoround route.

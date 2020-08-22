@@ -1,13 +1,26 @@
 const mongoose = require('mongoose');
 //Schema Setup
 const campgroundSchema = new mongoose.Schema({
-    name: String,
+    name: {
+        type: String,
+        required: [true, 'Please ass a store ID'], //error message
+        unique: true,
+    },
     image: String,
     description: String,
+    address: String,
     price: String,
-    location: String,
-    lat: Number,
-    lng: Number,
+    location: {
+        type: {
+            type: String, // Don't do `{ location: { type: String } }`
+            enum: ['Point'], // 'location.type' must be 'Point'
+        },
+        coordinates: {
+            type: [Number],
+            index: '2dsphere'
+        },
+        formattedAddress: String
+    },
     createdAt: { type: Date, default: Date.now() },
     author: {
         id: {
@@ -23,6 +36,7 @@ const campgroundSchema = new mongoose.Schema({
         ref: "Comment"
     }]
 });
+
 const Campground = mongoose.model("Campground", campgroundSchema);
 
 module.exports = Campground

@@ -84,12 +84,19 @@ router.post('/register', async (req, res) => {
                 const mail_data = {
                     //from: 'noreply@hello.com',
                     to: email,
-                    subject: "Please confirm your Email account",
+                    subject: "Please Verify your Email Account For YelpCamp!",
                     html: `
-                        <h2> Plaease click on given link to activate your accoutnt:</h2>
+                        <h3> You're almost ready to get started! </h2>
                         <div style="word-break:break-all">
+                        <p style="font-size:13px;line-height:16px" >Click this link to complete your YelpCamp account setup:</p>
+                        <a href="${url}"> Verify my email </a>
                         <h3>activate link:
-                        <p > ${url}</p>
+                        <p style="font-size:10px;line-height:16px"> Link not working? Copy and paste this URL into your browser:</p>
+                        <p style="font-size:10px;line-height:16px"> ${url}</p>
+                        <p>This link is valid for 1 hours. If this link expires, 
+                        <a href="${process.env.CLIENT_URL}/users/register">sign up </a> again. 
+                        </p>
+                        <p style="font-size:13px;line-height:16px">If you have questions about the email verification process, please <a href="#">contact support</a> </p>
                         </div>
                         `
                 };
@@ -211,12 +218,17 @@ router.post('/recover', async (req, res) => {
                 to: email,
                 subject: "Set new password.",
                 html: ` <h2> Plaease click on given link to set new password:</h2>
-                        <p> The link will expire after one hour. </p>
+                        <p style="font-size:13px;line-height:16px" >Click this link to complete your YelpCamp password reset:</p>
                         <div style="word-break:break-all">
-                        <h3>activate link:
-                        <p > ${url}</p>
+                        <a href="${url}"> Reset my password </a>
+                        <p style="font-size:10px;line-height:16px"> Link not working? Copy and paste this URL into your browser:</p>
+                        <p style="font-size:10px;line-height:16px"> ${url}</p>
+                        <p>This link is valid for 1 hours. If this link expires, 
+                        <a href="${process.env.CLIENT_URL}/users/recover"> reset password</a> again. 
+                        </p>
+                        <p style="font-size:13px;line-height:16px">If you have questions about the email verification process, please <a href="#">contact support</a> </p>
                         </div>
-                        <h3>If you did not request this, please ignore this email and your password will remain unchanged.'</h3> `
+                        `
             };
 
             await smtpTransport.sendMail(mail_data, (error, response) => {
