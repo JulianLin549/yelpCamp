@@ -12,16 +12,24 @@ const { v4: uuidv4 } = require('uuid');
 const User = require("../models/user")
 
 
-//LOGIN ROUTES
-//render login form
+router.get("/", middleware.isLoggedIn, (req, res) => {
+    //console.log(req.user);
+    res.redirect('/users/' + req.user._id);
+});
+
+
+/* ========================= 
+    SIGN UP EMAIL VERIFY 
+============================*/
+
 router.get("/login", (req, res) => {
-    res.render("login", { page: "login" });
+    res.render("users/login", { page: "login" });
 });
 
 //SIGH UP ROUTES
 //render signup form
 router.get("/register", (req, res) => {
-    res.render("register", { page: "register" });
+    res.render("users/register", { page: "register" });
 });
 
 
@@ -53,7 +61,7 @@ router.post('/register', async (req, res) => {
     //we also want to keep what the user typed in last time
     if (errors.length > 0) {
         //things below is ES6 syntax, errors, username equals to error: error, username: username
-        res.render('register', { errors, username, email, password, password2 })
+        res.render('users/register', { errors, username, email, password, password2 })
 
     } else {
         //valid imformation  and password
@@ -65,7 +73,7 @@ router.post('/register', async (req, res) => {
             //render register again with previously typed in information
             if (user) {
                 errors.push({ msg: 'Email is already registered' });
-                res.render('register', { errors, username, email, password, password2 })
+                res.render('users/register', { errors, username, email, password, password2 })
             } else {
 
                 //Hash Password using bcrypt
@@ -121,7 +129,8 @@ router.post('/register', async (req, res) => {
     }
 })
 
-//verifation email through jwt token
+//Verifation email through jwt token
+//Adding User in DB
 router.get('/activate/:token', async (req, res) => {
     const token = req.params.token;
     console.log(token);
@@ -166,13 +175,13 @@ router.get('/activate/:token', async (req, res) => {
 
 
 /* ========================= 
-           LOG IN 
+           LOG IN
 ============================*/
 
 //Login Handle
 router.post('/login', (req, res, next) => {
     passport.authenticate('local', {
-        successRedirect: '/users/dashboard',
+        successRedirect: '/users',
         failureRedirect: '/users/login',
         failureFlash: true
     })(req, res, next);
@@ -187,17 +196,18 @@ router.post('/login', (req, res, next) => {
 router.get("/logout", (req, res) => {
     req.logout();
     req.flash("success_msg", "Logged out");
-    res.redirect("/login");
+    res.redirect("/users/login");
 });
 
 /* ========================= 
         RECOVER PWD
 ============================*/
 router.get('/recover', (req, res) => {
-    res.render('recover')
+    res.render('users/recover')
 });
 
-//recover pwd, jwt by user uuid
+//recover pwd, using jwt by user uuid
+//send email to verify reset pwd
 router.post('/recover', async (req, res) => {
     const email = req.body.email;
     console.log(email)
@@ -243,16 +253,17 @@ router.post('/recover', async (req, res) => {
 
         } else {
             req.flash('error_msg', 'Did not find user, please register.');
-            res.redirect('register')
+            res.redirect('/users/register')
         }
     } catch (error) {
         req.flash('error_msg', 'Something went wrong with the server. Please try again later.');
         console.log(error.message)
-        res.redirect('login')
+        res.redirect('/users/login')
     }
 });
 
-
+//verify token sent to the user via email.
+//once the tokes is correct, show the pwd reset page
 router.get('/recover/:token', async (req, res) => {
     const token = req.params.token;
     console.log(token)
@@ -266,7 +277,7 @@ router.get('/recover/:token', async (req, res) => {
             let user = await User.findOne({ uuid });
             console.log(user)
             if (user) {
-                return res.render('newpassword', { uuid, email: user.email });
+                return res.render('users/newpassword', { token, email: user.email });
             }
 
         } catch (error) {
@@ -280,8 +291,8 @@ router.get('/recover/:token', async (req, res) => {
     }
 });
 
-router.post('/recover/:uuid', async (req, res) => {
-    const uuid = req.params.uuid;
+router.post('/recover/:token', async (req, res) => {
+    const token = req.params.token;
     const { password, password2 } = req.body
     let errors = [];
     // Check required fields
@@ -300,14 +311,15 @@ router.post('/recover/:uuid', async (req, res) => {
     //if there is a issue, rerender the register form and flash errors
     //we also want to keep what the user typed in last time
     if (errors.length > 0) {
-        return res.render('newpassword', { errors, password, password2, uuid })
+        return res.render('users/newpassword', { errors, password, password2, token })
     }
-    console.log(uuid)
+    console.log(token)
     try {
         //find if userid already in db
+        let decodedToken = await jwt.verify(token, process.env.JWT_ACC_ACTIVATE);
+        const uuid = decodedToken.uuid;
         let user = await User.findOne({ uuid });
         if (user) {
-
             //Hash Password using bcrypt
             //generate salt using bcrypt
             const salt = await bcrypt.genSalt(process.env.BCRYPT_WORK_FACTOR);
@@ -341,10 +353,39 @@ router.post('/recover/:uuid', async (req, res) => {
 
     }
 });
-router.get("/dashboard", middleware.isLoggedIn, (req, res) => {
-    res.render('dashboard', {
-        name: req.user.username
+/* router.get("/show", middleware.isLoggedIn, (req, res) => {
+    res.render('users/show', {
+        user: req.user
     });
+    console.log(req.user)
+}); */
 
+//User Profile
+router.get("/:id", middleware.checkUserOwnership, async (req, res) => {
+    try {
+        let user = await User.findById(req.params.id)
+        res.render("users/show", { user })
+
+    } catch (error) {
+        req.flash("error", "User doesn't exist. Please register!");
+        res.redirect('/users/register')
+    }
 });
+
+
+//EDIT USER
+router.get('/:id/edit', middleware.checkUserOwnership, async (req, res) => {
+
+    try {
+        let user = await User.findById(req.params.id)
+        res.render("users/edit", { user })
+
+    } catch (error) {
+        req.flash("error", "User doesn't exist. Please register!");
+        res.redirect('/users/register')
+    }
+
+
+})
+
 module.exports = router;

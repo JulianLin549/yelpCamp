@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
-    </script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.4.0/croppie.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.4.0/croppie.js"></script>
+
     <link rel="stylesheet" href="public/stylesheets/main.css">
     <link rel="stylesheet" href="public/stylesheets/user.css">
 
@@ -51,21 +54,28 @@
         </nav>
         <div class="container mt-2">
 
-            <div style="width:60%; margin:40px auto">
+            <div style="width:70%; margin:40px auto">
                 <form action="/users/<%= user._id %>/?_method=PUT " method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label class="avatar-wrapper">
+                                <!--<label class="avatar-wrapper">
                                     <img id="imageShow" class="profile-pic" src="https://dr18.com.tw/wp-content/uploads/2018/07/portrait-square-03-300x300.jpg" alt="">
                                     <div class="upload-button">
-                                        <!-- <i class="fa fa-arrow-circle-up" aria-hidden=" true"></i> -->
                                         <img id="uploadIcon" class="arror-up" aria-hidden=" true" src="../../public/images/cloud-backup-up-arrow.svg" alt="">
                                         <input style="display: none;" type="file" id="uploadImage" name="image" accept="image/*">
                                     </div>
+                                </label> -->
+                                <!-- Trigger modal Large modal -->
+                                <div class="avatar-wrapper" data-toggle="modal" data-target=".bd-example-modal-lg">
+                                    <img id="imageShow" class="profile-pic" src="https://dr18.com.tw/wp-content/uploads/2018/07/portrait-square-03-300x300.jpg" alt="">
+                                    <div class="upload-button">
+                                        <img id="uploadIcon" class="arror-up" aria-hidden=" true" src="../../public/images/cloud-backup-up-arrow.svg" alt="">
+                                        <input style="display: none;" type="file" id="uploadImage" name="image" accept="image/*">
+                                    </div>
+                                </div>
 
-                                </label>
-                                <p class="lead" id="userNameShow"> <%= user.username   %></p>
+                                <p class="lead mt-2" id="userNameShow"> <%= user.username   %></p>
                                 <div class="list-group">
                                     <a href="#" class="list-group-item list-group-item-action active">Info 1</a>
                                     <a href="#" class="list-group-item list-group-item-action">Info 2</a>
@@ -98,8 +108,81 @@
                     </div>
                 </form>
 
-                <a href="/users">Go Back to user profile!</a>
+                <a class="mt-2" href="/users">Go Back to user profile!</a>
             </div>
+
+            <!-- Popup Modal Start -->
+            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Image Cropper</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cropCancel();">
+                                <span aria-hidden=" true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js"></script>
+                            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.4.0/croppie.js"></script>
+                            <div id="img-crop ">
+
+
+                                <input type="file" id="upload" value="Choose a file">
+                                <div id="upload-demo"></div>
+                                <input type="hidden" id="imagebase64" name="imagebase64">
+                                <a href="#" class="upload-result">Send</a>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- Popup Modal End -->
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    var $uploadCrop;
+
+                    function readFile(input) {
+                        if (input.files && input.files[0]) {
+                            var reader = new FileReader();
+                            reader.onload = function(e) {
+                                $uploadCrop.croppie('bind', {
+                                    url: e.target.result
+                                });
+                                $('.upload-demo').addClass('ready');
+                            }
+                            reader.readAsDataURL(input.files[0]);
+                        }
+                    }
+
+                    $uploadCrop = $('#upload-demo').croppie({
+                        viewport: {
+                            width: 270,
+                            height: 270,
+                            type: 'square'
+                        },
+                        boundary: {
+                            width: 450,
+                            height: 450
+                        }
+                    });
+
+                    $('#upload').on('change', function() { readFile(this); });
+                    $('.upload-result').on('click', function(ev) {
+                        $uploadCrop.croppie('result', {
+                            type: 'canvas',
+                            size: 'original'
+                        }).then(function(resp) {
+                            $('#imagebase64').val(resp);
+                            $('#form').submit();
+                        });
+                    });
+
+                });
+            </script>
             <script>
                 const uploadImage = document.getElementById("uploadImage");
                 const uploadIcon = document.getElementById("uploadIcon");
@@ -136,8 +219,6 @@
                 }
             </script>
 
-
-            <%-include ("../partials/footer")  -%>
         </div>
 
     </div> <!-- <div id="app">  -->

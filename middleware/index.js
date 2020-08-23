@@ -64,12 +64,37 @@ middlewareObj.checkCampgroundOwnership = function(req, res, next) {
 };
 
 
+middlewareObj.checkUserOwnership = async (req, res, next) => {
+    if (req.isAuthenticated()) {
+        try {
+            let foundUser = await User.findById(req.params.id)
+            if (foundUser._id.equals(req.user._id)) {
+                next();
+            } else {
+                req.flash("error", "You are not the correct user, please log in !");
+                res.redirect("/users/login")
+            }
+
+        } catch (error) {
+            console.log(error)
+            req.flash('error_msg', 'You are not the correct user, please log in!')
+            res.redirect("/users/login");
+        }
+
+    } else {
+        req.flash("error", "You need to be logged in to do that.");
+        res.redirect("/users/login"); //send to where the user originally from.
+    }
+
+};
+
+
 
 middlewareObj.isLoggedIn = function(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
     req.flash("error", "You need to be logged in to do that.");
-    res.redirect("/login");
+    res.redirect("/users/login");
 }
 module.exports = middlewareObj;
