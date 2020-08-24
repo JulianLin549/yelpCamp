@@ -9,7 +9,26 @@ const jwt = require('jsonwebtoken');
 const smtpTransport = require('../config/smtp');
 const middleware = require('../middleware'); //will automaticlly include index.js
 const { v4: uuidv4 } = require('uuid');
-const User = require("../models/user")
+const User = require("../models/user");
+const multer = require('multer');
+const fs = require("fs");
+
+//set filename to multer 
+const storage = multer.diskStorage({
+    filename: function(req, file, callback) {
+        callback(null, Date.now() + file.originalname);
+    }
+});
+//only allow jpeg, jpeg, png, gif to be uploaded
+let imageFilter = function(req, file, cb) {
+    // accept image files only
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+};
+let upload = multer({ storage: storage, fileFilter: imageFilter })
+
 
 
 router.get("/", middleware.isLoggedIn, (req, res) => {
@@ -373,7 +392,7 @@ router.get("/:id", middleware.checkUserOwnership, async (req, res) => {
 });
 
 
-//EDIT USER
+//SHOW EDIT PAGE
 router.get('/:id/edit', middleware.checkUserOwnership, async (req, res) => {
 
     try {
@@ -384,8 +403,28 @@ router.get('/:id/edit', middleware.checkUserOwnership, async (req, res) => {
         req.flash("error", "User doesn't exist. Please register!");
         res.redirect('/users/register')
     }
-
-
 })
+//EDIT USER 
+router.put('/:id', upload.single('image'), async (req, res) => {
+    console.log("put route!")
+    try {
+        //如果有更改上傳照片
+        if (req.body.user.avatar) {
+            var avatarBase64Data = req.body.user.avatar.replace(/^data:image\/jpeg;base64,/, "");
+            fs.writeFile("out.jpg", avatarBase64Data, 'base64', function(err) {
+                console.log(err);
+            });
+
+        } else {
+            console.log(req.body.user.lastName)
+        }
+
+    } catch (error) {
+        console.log(error);
+        req.flash('error', err.message);
+        return res.redirect('back');
+    }
+})
+
 
 module.exports = router;

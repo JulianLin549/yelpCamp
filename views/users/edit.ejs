@@ -47,6 +47,8 @@
                         <input class="form-control" type="text" name="user[lastName]" value=<%= user.lastName  %>>
                     </div>
 
+                    <input style="display: none;" type="text" id="avatar" name="user[avatar]">
+
                     <div class="form-group">
                         <button class="class= btn btn-lg btn-primary btn-block">Submit!</button>
                     </div>
@@ -247,12 +249,13 @@
     const deleteIcon = document.getElementById("deleteIcon");
     const saveCroppedBtn = document.getElementById("saveCroppedBtn");
     const imageCroped = document.getElementById("imageCroped");
-
+    const avatar = document.getElementById("avatar");
     saveCroppedBtn.onclick = function() {
         let newImage = imageCroped.src;
         cropCancel();
         imageShow.setAttribute('src', newImage);
         saveCroppedBtn.style.display = 'none';
+        avatar.setAttribute('value', newImage)
     }
 
     uploadImage.onchange = function() {
@@ -264,25 +267,8 @@
         } else {
             readURL(this);
             console.log(this.files[0].name);
+
         }
     };
-    deleteIcon.onclick = function() {
-        uploadImage.value = "";
-        fileDescription.innerText = "Upload Image less than 6MB.";
-        deleteIcon.style.display = 'none'
-    }
-
-    function readURL(input) {
-        if (input.files && input.files[0]) {
-
-            var reader = new FileReader();
-            reader.onload = function(e) {
-
-                imageShow.setAttribute("src", e.target.result)
-                //$('#blah').attr('src', e.target.result);
-            }
-            reader.readAsDataURL(input.files[0]); // convert to base64 string
-        }
-    }
 </script>
 <%-include ("../partials/footer")  -%>
