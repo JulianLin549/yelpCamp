@@ -3,9 +3,9 @@ const puppeteer = require('puppeteer');
     // set some options (set headless to false so we can see 
     // this automated browsing experience)
     let launchOptions = {
-        headless: false,
+        headless: true
         //executablePath: 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', // because we are using puppeteer-core so we must define this option
-        args: ['--start-maximized']
+        //args: ['--start-maximized']
     };
 
 
@@ -14,7 +14,7 @@ const puppeteer = require('puppeteer');
 
     // set viewport and user agent (just in case for nice viewing)
     await page.setViewport({ width: 1366, height: 768 });
-    const address = '桃園市中壢區遠東路81巷11號'
+    const address = '台北市大安區羅斯福路四段一號'
     // go to the target web
     await page.goto("https://map.tgos.tw/TGOSCloud/Web/Map/TGOSViewer_Map.aspx?addr=" + address);
     await page.waitForXPath('//*[@id="MapBox"]/div[1]/div[2]/div/p[1]')
@@ -36,5 +36,6 @@ const puppeteer = require('puppeteer');
     let y = parseFloat(getMsg[2])
     const tw97tolatlon = require('./utils/tw97tolatlon')
     console.log(tw97tolatlon(x, y))
+    await browser.close();
 
 })();
