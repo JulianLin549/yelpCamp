@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yelp Camp</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="public/stylesheets/main.css">
+    <link rel="stylesheet" href="public/stylesheets/user.css">
+    <style>
+        body {
+            background-color: lightblue;
+        }
+
+        .rating {
+            text-align: center;
+            margin-top: 120px;
+            position: relative;
+            width: 50%;
+            float: left;
+        }
+
+        .hidden {
+            opacity: 0;
+        }
+
+        .star {
+            display: inline-block;
+            margin: 5px;
+            font-size: 30px;
+            color: whitesmoke;
+            position: relative;
+        }
+
+        .star.animate {
+            -webkit-animation: stretch-bounce .5s ease-in-out;
+        }
+
+        .star.hidden {
+            opacity: 0;
+        }
+
+        .full:before {
+            font-family: fontAwesome;
+            display: inline-block;
+            content: "\f005";
+            position: relative;
+            float: right;
+            z-index: 2;
+        }
+
+        .half:before {
+            font-family: fontAwesome;
+            content: "\f089";
+            position: absolute;
+            float: left;
+            z-index: 3;
+        }
+
+        .star-colour {
+            color: #ffd700;
+        }
+
+        @-webkit-keyframes stretch-bounce {
+            0% {
+                -webkit-transform: scale(1);
+            }
+
+            25% {
+                -webkit-transform: scale(1.5);
+            }
+
+            50% {
+                -webkit-transform: scale(0.9);
+            }
+
+            75% {
+                -webkit-transform: scale(1.2);
+            }
+
+            100% {
+                -webkit-transform: scale(1);
+            }
+        }
+
+        .selected:before {
+            font-family: fontAwesome;
+            display: inline-block;
+            content: "\f005";
+            position: absolute;
+            top: 0;
+            left: 0;
+            -webkit-transform: scale(1);
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .selected.pulse:before {
+            -webkit-transform: scale(3);
+            opacity: 0;
+        }
+
+        .selected.is-animated:before {
+            transition: 1s ease-out;
+        }
+
+        .score {
+            font-family: arial;
+            font-size: 20px;
+            color: green;
+            margin-top: 20px;
+            margin-left: 50px;
+        }
+
+        .score-rating {
+            vertical-align: sup;
+            top: -5px;
+            position: relative;
+            font-size: 150%;
+        }
+
+        .total {
+            vertical-align: sub;
+            top: 0px;
+            position: relative;
+            font-size: 100%;
+        }
+
+        .average {
+            font-family: arial;
+            font-size: 20px;
+            color: indianred;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .average .score-average {
+            padding-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="rating" data-vote="0">
+
+        <div class="star hidden">
+            <span class="full" data-value="0"></span>
+            <span class="half" data-value="0"></span>
+        </div>
+
+        <div class="star">
+
+            <span class="full" data-value="1"></span>
+            <span class="half" data-value="0.5"></span>
+            <span class="selected"></span>
+
+        </div>
+
+        <div class="star">
+
+            <span class="full" data-value="2"></span>
+            <span class="half" data-value="1.5"></span>
+            <span class="selected"></span>
+
+        </div>
+
+        <div class="star">
+
+            <span class="full" data-value="3"></span>
+            <span class="half" data-value="2.5"></span>
+            <span class="selected"></span>
+
+        </div>
+
+        <div class="star">
+
+            <span class="full" data-value="4"></span>
+            <span class="half" data-value="3.5"></span>
+            <span class="selected"></span>
+
+        </div>
+
+        <div class="star">
+
+            <span class="full" data-value="5"></span>
+            <span class="half" data-value="4.5"></span>
+            <span class="selected"></span>
+
+        </div>
+
+        <div class="score">
+            <span class="score-rating js-score">0</span>
+            <span>/</span>
+            <span class="total">5</span>
+        </div>
+    </div>
+
+
+    <div class="average">
+        <span class="text">Your average score is</span>
+        <div class=" score-average js-average"></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+
+</html>

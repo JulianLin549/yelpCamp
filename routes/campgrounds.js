@@ -1,10 +1,13 @@
 const express = require('express'),
     router = express.Router(),
     Campground = require('../models/campground'),
+    Notifications = require('../models/notification'),
     middleware = require('../middleware'), //will automaticlly include index.js
     multer = require('multer'),
     fs = require("fs"),
-    request = require("request-promise-native");
+    request = require("request-promise-native"),
+    User = require("../models/user"),
+    Review = require("../models/review");
 
 //set filename to multer 
 const storage = multer.diskStorage({
@@ -109,6 +112,19 @@ router.post('/', middleware.isLoggedIn, upload.single('image'), async (req, res)
         fs.unlinkSync(req.file.path);
         //塞到db裡面
         let campground = await Campground.create(req.body.campground);
+        //讓我的follower 知道你上傳了campgorund
+        let user = await User.findById(req.user._id).populate('followers').exec();
+        let newNotification = {
+            username: req.user.username,
+            campgroundId: campground.id
+        }
+        //讓我的所有followers接收通知(塞通知到他的notifications DB)
+        for (const follower of user.followers) {
+            let notification = await Notification.create(newNotification); //make a new notification
+            follower.notification.push(notification);
+            follower.save()
+        }
+
         res.redirect('/campgrounds/' + campground.id);
 
     } catch (error) {
@@ -128,7 +144,10 @@ router.get('/:id', (req, res) => {
     //retreving one campground with the right id
     //we populate the comments array on it (we get the real comments from the comments DB, so it is not just ids) 
     //and we exec the function
-    Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground) {
+    Campground.findById(req.params.id).populate("comments").populate({
+        path: "reviews",
+        options: { sort: { createdAt: -1 } }
+    }).exec(function(err, foundCampground) {
         if (err || !foundCampground) {
             req.flash("error", "Campground not found!");
             return res.redirect("back");
@@ -181,6 +200,7 @@ router.put('/:id', middleware.checkCampgroundOwnership, upload.single('image'), 
             fs.unlinkSync(req.file.path);
 
         }
+        delete req.body.campground.rating;
         let data = req.body.campground; //在ejs裡面包好了campground[name, image, author]
         //find and update
         await Campground.findByIdAndUpdate(req.params.id, data);
@@ -194,14 +214,20 @@ router.put('/:id', middleware.checkCampgroundOwnership, upload.single('image'), 
 })
 
 // DESTROY CAMPGROUND
-router.delete('/:id', middleware.checkCampgroundOwnership, (req, res) => {
-    Campground.findByIdAndRemove(req.params.id, (err) => {
-        if (err) {
-            res.redirect("/campgrounds")
-        } else {
-            res.redirect("/campgrounds")
-        }
-    })
+router.delete('/:id', middleware.checkCampgroundOwnership, async (req, res) => {
+    try {
+        let campground = await Campground.findById(req.params.id);
+        await Comment.remove({ "_id": { $in: campground.comments } });
+        await Review.remove({ "_id": { $in: campground.reviews } })
+        campground.remove();
+        req.flash("success", "Campground deleted successfully!");
+        res.redirect("/campgrounds");
+
+    } catch (error) {
+        console.log(err);
+        res.redirect("/campgrounds");
+    }
+
 })
 
 function escapeRegex(text) {

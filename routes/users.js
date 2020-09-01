@@ -41,9 +41,7 @@ router.get("/", middleware.isLoggedIn, (req, res) => {
     SIGN UP EMAIL VERIFY 
 ============================*/
 
-router.get("/login", (req, res) => {
-    res.render("users/login", { page: "login" });
-});
+
 
 //SIGH UP ROUTES
 //render signup form
@@ -196,6 +194,10 @@ router.get('/activate/:token', async (req, res) => {
 /* ========================= 
            LOG IN
 ============================*/
+
+router.get("/login", (req, res) => {
+    res.render("users/login", { page: "login" });
+});
 
 //Login Handle
 router.post('/login', (req, res, next) => {
@@ -382,7 +384,7 @@ router.post('/recover/:token', async (req, res) => {
 //User Profile
 router.get("/:id", middleware.checkUserOwnership, async (req, res) => {
     try {
-        let user = await User.findById(req.params.id)
+        let user = await User.findById(req.params.id).populate('followers').exec();
         res.render("users/show", { user })
 
     } catch (error) {

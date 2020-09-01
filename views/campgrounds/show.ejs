@@ -4,6 +4,7 @@
 <!-- maxbox setting -->
 <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
 <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<link rel="stylesheet" href="/stylesheets/rating-show.css">
 
 
 <div class="row">
@@ -36,6 +37,91 @@
                 <% } %>
             </div>
         </div>
+        <!--Review section-->
+        <div class="thumbnail">
+            <div class="caption-full">
+                <% if (campground.rating === 0) { %>
+                <h5>
+                    <em>No reviews yet.</em>
+                </h5>
+                <% } else { %>
+
+                <span><strong><%= campground.rating.toFixed(1) %></strong></span>
+                <div class="star-rating">
+
+                    <div class="back-stars">
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <i class="fa fa-star" aria-hidden="true"></i>
+
+                        <div class="front-stars" style="width: <%= campground.rating*20 %>%">
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                            <i class="fa fa-star" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <em>(<%= campground.reviews.length %>)</em>
+
+                <p>
+                    <h4>Latest reviews for this campground:</h4>
+                </p>
+                <hr style="margin-top: 0;">
+                <% campground.reviews.slice(0, 5).forEach(function(review){ %>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="star-rating">
+
+                            <div class="back-stars">
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                                <i class="fa fa-star" aria-hidden="true"></i>
+
+                                <div class="front-stars" style="width: <%= review.rating*20 %>%">
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div>Review by: <strong><%= review.author.username %></strong></div>
+                        <span><em><%= review.updatedAt.toDateString() %></em></span>
+                    </div>
+                    <div class="col-md-9">
+                        <p style="text-align: justify; word-wrap: break-word;">
+                            <%= review.text %>
+                        </p>
+                        <% if(currentUser && review.author.id.equals(currentUser._id)){ %>
+                        <a class="btn btn-xs btn-warning" href="/campgrounds/<%=campground._id %>/reviews/<%=review._id %>/edit">Edit</a>
+                        <form id="delete-form" action="/campgrounds/<%=campground._id %>/reviews/<%=review._id %>?_method=DELETE" method="POST">
+                            <input type="submit" class="btn btn-xs btn-danger" value="Delete">
+                        </form>
+                        <% } %>
+                    </div>
+                </div>
+                <hr>
+                <% }); %>
+                <div style="margin-bottom: 10px;">
+                    <h4><a href="/campgrounds/<%= campground._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
+                </div>
+                <% } %>
+                <div>
+                    <a class="btn btn-primary btn-lg <% if (currentUser && campground.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/campgrounds/<%= campground._id %>/reviews/new">
+                        Write a New Review</a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- comment section -->
         <div class="well">
             <%  if (currentUser){%>
             <div class="text-right">

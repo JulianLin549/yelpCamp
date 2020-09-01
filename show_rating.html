@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yelp Camp</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="public/stylesheets/main.css">
+    <link rel="stylesheet" href="public/stylesheets/user.css">
+    <style>
+        /*---------- general ----------*/
+        body {
+            background: #ff7070;
+            color: #F3FCF0;
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Raleway', sans-serif;
+            text-shadow: 2px 2px 0 #843a3a;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.3em;
+        }
+
+        /*---------- star rating ----------*/
+        .star-rating,
+        .back-stars,
+        .front-stars {
+            display: flex;
+        }
+
+        .star-rating {
+            align-items: center;
+            font-size: 3em;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .back-stars {
+            color: #bb5252;
+            position: relative;
+            /*  text-shadow: 4px 4px 10px #843a3a; */
+        }
+
+        .front-stars {
+            color: #FFBC0B;
+            overflow: hidden;
+            position: absolute;
+            /*  text-shadow: 2px 2px 5px #d29b09; */
+            top: 0;
+            transition: all 0.5s;
+        }
+
+        input {
+            background: transparent;
+            border: solid 2px #bb5252;
+            color: #fff;
+            font-size: 1.5em;
+            height: 50px;
+            width: 60px;
+            text-align: center;
+            margin-top: 50px;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .percent {
+            color: #bb5252;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="star-rating" title="70%">
+        <div class="back-stars">
+            <i class="fa fa-star" aria-hidden="true"></i>
+            <i class="fa fa-star" aria-hidden="true"></i>
+            <i class="fa fa-star" aria-hidden="true"></i>
+            <i class="fa fa-star" aria-hidden="true"></i>
+            <i class="fa fa-star" aria-hidden="true"></i>
+
+            <div class="front-stars" style="width: 70%">
+                <i class="fa fa-star" aria-hidden="true"></i>
+                <i class="fa fa-star" aria-hidden="true"></i>
+                <i class="fa fa-star" aria-hidden="true"></i>
+                <i class="fa fa-star" aria-hidden="true"></i>
+                <i class="fa fa-star" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+    <input type="number" value="70" max="100" min="0"><span class="percent">%</span>
+
+    <script>
+        const numberInput = document.querySelector('input');
+        const starRatingWrapper = document.querySelector('.star-rating');
+        const frontStars = document.querySelector('.front-stars');
+
+        const rate = e => {
+            const percentage = e.target.value + '%';
+
+            starRatingWrapper.title = percentage;
+            frontStars.style.width = percentage;
+        };
+
+        numberInput.addEventListener('click', rate);
+        numberInput.addEventListener('keyup', rate);
+    </script>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -8,10 +8,8 @@ const express = require('express'),
     passport = require('passport'),
     LocalStrategy = require("passport-local"),
     mathodOverride = require("method-override"),
-    //Campground = require("./models/campground"),
-    //Comment = require("./models/comment"),
     flash = require("connect-flash"),
-    //User = require("./models/user"),
+    User = require("./models/user"),
     settings = require("./settings");
 //seedDB = require("./seeds")
 
@@ -72,8 +70,16 @@ app.set('view engine', 'ejs'); //把ejs設訂為預設檔案。
 //Global variable
 //used to flash message
 //can call the currentUser success_msg and error_msg from anywhere
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     res.locals.currentUser = req.user;
+    if (req.user) {
+        try {
+            let user = await User.findById(req.user._id).populate('notifications', null, { isRead: false }).exec();
+            res.locals.notifications = user.notifications.reverse();
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error'); //msg from passport.js will put error in req.flash('error)
@@ -87,7 +93,9 @@ app.locals.moment = require('moment');
 app.use('/', require('./routes/index'))
 app.use('/users', require('./routes/users'))
 app.use('/campgrounds/:id/comments', require('./routes/comments'))
+app.use("/campgrounds/:id/reviews", require('./routes/reviews'))
 app.use('/campgrounds', require('./routes/campgrounds'))
+
 
 app.get('/:else', (req, res) => {
     res.send("No such pass exist.")

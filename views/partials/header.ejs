@@ -54,6 +54,26 @@
                     </li>
 
                     <% } else { %>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Notifications
+                            <span class="badge"><%= notifications.length  %> </span>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+                            <% notifications.forEach((notification)=>{%>
+                            <a href="/notifications/<%= notification.id %>">
+                                <%= notification.username %> created a new campground
+                            </a>
+                            <% }) %>
+                            <% if(notifications.length > 0){ %>
+                            <div class="dropdown-divider"></div>
+                            <% } %>
+                            <a class="dropdown-item" href="/notifications">View past Notifications</a>
+                        </div>
+                    </li>
+
                     <li class="nav-item ">
                         <a class="nav-link" href="/users"> Hi, <%= currentUser.username %></a>
                     </li>
